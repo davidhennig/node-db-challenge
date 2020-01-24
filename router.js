@@ -4,7 +4,7 @@ const router = express.Router();
 
 router.get("/:id/resources", (req, res) => {
   projects
-    .getResources()
+    .getResources(req.params.id)
     .then(resp => {
       res.json(resp);
     })
@@ -43,15 +43,23 @@ router.get("/:id", (req, res) => {
     });
 });
 
-router.post("/:id/resources", (req, res) => {
+router.post("/:id", (req, res) => {
   projects
-    .addResource(req.body)
+    .getById(req.params.id)
     .then(resp => {
-      res.status(200).json(resp);
+      if (resp) {
+        projects.addResource(req.body, req.params.id).then(response => {
+          res.status(201).json(response);
+        });
+      } else {
+        res
+          .status(404)
+          .json({ message: "Could not find project with given id." });
+      }
     })
     .catch(error => {
       console.log(error);
-      res.status(500).json({ message: "error adding resources" });
+      res.status(500).json({ message: "Failed to create new resource" });
     });
 });
 
@@ -63,7 +71,7 @@ router.post("/", (req, res) => {
     })
     .catch(error => {
       console.log(error);
-      res.status(500).json({ message: "error getting resources" });
+      res.status(500).json({ message: "error adding project" });
     });
 });
 

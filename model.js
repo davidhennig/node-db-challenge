@@ -1,4 +1,4 @@
-const db = require("./data/migrations/db-config");
+const db = require("./data/db-config");
 
 module.exports = {
   getResources,
@@ -11,8 +11,8 @@ module.exports = {
 };
 
 function getResources(project_id) {
-  return db("resources")
-    .join("resources", "resources.id", "project_resources.resources_id")
+  return db("project_resources")
+    .join("resources", "resources.id", "project_resources.resource_id")
     .where("project_resources.project_id", project_id);
 }
 
@@ -35,10 +35,18 @@ function getById(id) {
 function addResource(resource) {
   return db("resources")
     .insert(resource)
-    .where(ids => {
-      return getById(ids[0]);
+    .then(ids => {
+      return ids[0]
+        .join("resources", "resources.id", "project_resources.resource_id")
+        .where("project_resources.project_id", resources);
     });
 }
+
+// function addResource(resources, project_id) {
+//   return db("project_resources")
+//     .join("resources", "resources.id", "project_resources.resource_id")
+//     .where("project_resources.project_id", resources, project_id);
+// }
 
 function addProject(project) {
   return db("projects").insert(project);
