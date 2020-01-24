@@ -26,14 +26,24 @@ router.get("/", (req, res) => {
     });
 });
 
-router.get("/:id/tasks");
+router.get("/:id/task_list", (req, res) => {
+  projects
+    .getTasks(req.params.id)
+    .then(resp => {
+      res.json(resp);
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ message: "error getting tasks" });
+    });
+});
 
 router.get("/:id", (req, res) => {
   projects
-    .getById(req.params)
+    .getById(req.params.id)
     .then(resp => {
       if (resp) {
-        res.json(resp);
+        return res.json(resp);
       }
       res.status(400).json({ message: "could not find given id" });
     })
@@ -75,6 +85,26 @@ router.post("/", (req, res) => {
     });
 });
 
-router.post("/:id/tasks");
+router.post("/:id/task", (req, res) => {
+  projects
+    .getById(req.params.id)
+    .then(resp => {
+      if (resp) {
+        projects
+          .addTasks({ ...req.body, project_id: req.params.id })
+          .then(response => {
+            res.status(201).json(response);
+          });
+      } else {
+        res
+          .status(404)
+          .json({ message: "Could not find project with given id." });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({ message: "Failed to create new task" });
+    });
+});
 
 module.exports = router;
